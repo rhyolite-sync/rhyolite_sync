@@ -52,12 +52,14 @@ void main() {
     var done = false;
     fakeAsync((async) {
       // One byte, then nothing at all — the shape of a stalled response.
+      // then<void> before catchError: on a Future<Map> the handler would owe a
+      // Map back, and returning an empty one to satisfy that reads like the
+      // download succeeded with nothing in it.
       _storage(_DripClient([Duration.zero, const Duration(hours: 1)]))
           .download(['blob-1'])
-          .then((_) => done = true)
+          .then<void>((_) => done = true)
           .catchError((Object e) {
             error = e;
-            return <String, Uint8List>{};
           });
       async.elapse(const Duration(minutes: 5));
       async.flushMicrotasks();

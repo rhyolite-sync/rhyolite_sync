@@ -3257,6 +3257,7 @@ $kSyncPanelCss
     selfHostEnabled: selfHostEnabled,
     selfHostUrl: selfHostUrl,
     selfHostDirectory: selfHostEnabled ? auth.directory : null,
+    log: _log,
   );
   return settings;
 }

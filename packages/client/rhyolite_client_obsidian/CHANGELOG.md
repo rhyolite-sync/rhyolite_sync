@@ -1,3 +1,19 @@
+## [3.17.3] - 2026-09-08
+
+**Sign in with a code when the browser cannot bring you back.**
+Browser sign-in finishes by handing an `obsidian://` link back to the app, and
+not every desktop delivers it — Linux most of all. The code skips that step:
+open the sign-in page, copy the code it shows, paste it into Obsidian. Same
+account, same session.
+
+### Features
+
+- sign in by pasting a code when the browser cannot come back (obsidian)
+
+### Other
+
+- a cut transfer reports the failure, not an empty result (core)
+
 ## [3.17.2] - 2026-09-05
 
 **Moving or renaming a file costs no download on your other devices.**

@@ -603,8 +603,29 @@ class RuStrings extends AppStrings {
   String get signInLinkWrongDevice =>
       'Эта ссылка входа не для этого устройства. Попробуйте снова.';
   @override
+  String get signInLinkNoCode =>
+      'Ссылка входа пришла без кода. Воспользуйтесь входом по коду.';
+  @override
   String couldNotOpenAccountPage(Object error) =>
       'Не удалось открыть страницу аккаунта: $error';
+  @override
+  String get signInWithCode => 'Вход по коду';
+  @override
+  String get signInWithCodeDescription =>
+      'Если браузер не возвращает вас в Obsidian, откройте страницу с кодом и '
+      'вставьте код сюда.';
+  @override
+  String get signInWithCodeButton => 'Ввести код';
+  @override
+  String get loginCodeModalDescription =>
+      'Откройте страницу входа, войдите в аккаунт и скопируйте код. '
+      'Код одноразовый и действует 10 минут.';
+  @override
+  String get loginCodeOpenPage => 'Открыть страницу с кодом';
+  @override
+  String get loginCodePlaceholder => 'Код со страницы входа';
+  @override
+  String get loginCodeSigningIn => 'Выполняется вход…';
 
   // ── Settings: vault ──
   @override

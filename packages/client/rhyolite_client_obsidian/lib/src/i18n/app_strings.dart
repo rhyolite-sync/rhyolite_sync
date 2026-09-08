@@ -258,7 +258,18 @@ abstract class AppStrings {
   String get signedIn;
   String signInFailed(Object error);
   String get signInLinkWrongDevice;
+  String get signInLinkNoCode;
   String couldNotOpenAccountPage(Object error);
+
+  // Sign-in fallback: paste a one-time code. For desktops where the browser
+  // cannot hand `obsidian://` back to the app at all.
+  String get signInWithCode;
+  String get signInWithCodeDescription;
+  String get signInWithCodeButton;
+  String get loginCodeModalDescription;
+  String get loginCodeOpenPage;
+  String get loginCodePlaceholder;
+  String get loginCodeSigningIn;
 
   // ── Settings: vault ──────────────────────────────────────────────────────
   String get vaultSection;

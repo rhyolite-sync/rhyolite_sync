@@ -591,8 +591,29 @@ class EnStrings extends AppStrings {
   String get signInLinkWrongDevice =>
       'This sign-in link is not for this device. Try again.';
   @override
+  String get signInLinkNoCode =>
+      'The sign-in link arrived without a code. Use the code sign-in instead.';
+  @override
   String couldNotOpenAccountPage(Object error) =>
       'Could not open the account page: $error';
+  @override
+  String get signInWithCode => 'Sign in with a code';
+  @override
+  String get signInWithCodeDescription =>
+      'If your browser cannot bring you back to Obsidian, open the code page '
+      'and paste the code here.';
+  @override
+  String get signInWithCodeButton => 'Enter code';
+  @override
+  String get loginCodeModalDescription =>
+      'Open the sign-in page, log in, and copy the code. It is single-use and '
+      'valid for 10 minutes.';
+  @override
+  String get loginCodeOpenPage => 'Open the code page';
+  @override
+  String get loginCodePlaceholder => 'Code from the sign-in page';
+  @override
+  String get loginCodeSigningIn => 'Signing in…';
 
   // ── Settings: vault ──
   @override

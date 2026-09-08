@@ -9,6 +9,7 @@ import 'package:rhyolite_client_obsidian/src/engine/vault_picker_modal.dart';
 import 'package:rhyolite_client_obsidian/src/vault/managed_vault_directory.dart';
 import 'package:rhyolite_client_obsidian/src/vault/vault_directory.dart';
 import 'package:rhyolite_sync/rhyolite_sync.dart';
+import 'package:rpc_dart/rpc_dart.dart' show LogScope;
 import 'package:uuid/uuid.dart';
 
 import '../i18n/i18n.dart';
@@ -20,6 +21,7 @@ import '../settings/settings_sync_prefs.dart';
 import '../settings/settings_sync_settings_ui.dart';
 import 'build_env.dart';
 import 'db_recovery.dart';
+import 'login_code_modal.dart';
 import 'modal_lock.dart';
 import 'obsidian_config_storage.dart';
 import 'self_host_modal.dart';
@@ -117,6 +119,11 @@ import 'auth_config.dart';
   required bool selfHostEnabled,
   required String selfHostUrl,
   IVaultDirectory? selfHostDirectory,
+  // Browser-auth's return leg runs entirely outside this process — the OS
+  // hands `obsidian://rhyolite-auth` to Obsidian, or quietly does not. Without
+  // a line here, a callback that never arrives and one that arrives empty look
+  // identical from the logs: like nothing happened at all.
+  LogScope? log,
 }) {
   // Mutable state captured by the builder closure — updated via callbacks.
   var currentConfig = config;
@@ -351,6 +358,30 @@ import 'auth_config.dart';
       onClick: () {
         if (!currentAuthConfig.isConfigured) return;
         beginBrowserAuth();
+      },
+    );
+
+    // The same browser sign-in, carried back by hand. Offered next to the
+    // button above rather than hidden in the command palette: the machines
+    // that need it are the ones where the button above does nothing at all,
+    // and a user who cannot sign in has nowhere else to be told this exists.
+    void addCodeSignInButton(PluginSettingsTab t) => t.addButton(
+      name: S.signInWithCode,
+      description: S.signInWithCodeDescription,
+      buttonText: S.signInWithCodeButton,
+      onClick: () async {
+        if (!currentAuthConfig.isConfigured) return;
+        final signedIn = await withModalLock(
+          () => showLoginCodeModal(
+            plugin,
+            client: accountClient,
+            authWebUrl: authWebUrl,
+            openUrl: openUrl,
+          ),
+        );
+        if (signedIn == null) return;
+        await applySignedIn();
+        showNotice(S.signedIn);
       },
     );
 
@@ -606,6 +637,7 @@ import 'auth_config.dart';
         addSubscriptionSection(t, subscriptionEnd);
       } else {
         addBrowserSignInButton(t);
+        addCodeSignInButton(t);
       }
     }
 
@@ -779,7 +811,17 @@ import 'auth_config.dart';
       jsu.allowInterop((params) {
         final code = (jsu.getProperty<String?>(params, 'code') ?? '').trim();
         final state = jsu.getProperty<String?>(params, 'state') ?? '';
+        // Lengths, never values: both are live credentials for the next ten
+        // minutes. Length alone separates every failure we have seen — a
+        // callback the OS truncated at `&` arrives with a code and no state.
+        log?.info(
+          'auth callback: code ${code.length} ch, state ${state.length} ch, '
+          'awaiting ${pendingAuthState == null ? 'none' : 'a nonce'}',
+        );
         if (code.isEmpty) {
+          // Reached only when the URL lost its query on the way in, so the
+          // browser looks like it did nothing. Say so, and name the way out.
+          showNotice(S.signInLinkNoCode);
           return;
         }
         if (pendingAuthState == null || state != pendingAuthState) {
@@ -792,7 +834,9 @@ import 'auth_config.dart';
             await accountClient.redeemLoginCode(code);
             await applySignedIn();
             showNotice(S.signedIn);
+            log?.info('auth callback: signed in');
           } catch (e) {
+            log?.warning('auth callback: redeem failed: $e');
             showNotice(S.signInFailed(e));
           }
         }();
